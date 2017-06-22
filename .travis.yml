@@ -8,7 +8,10 @@ install:
     - pip install -r requirements.txt
     - pip install -r tests/requirements.txt
 
-script: python -m pytest --cov=certbot_dns_dnspod --cov-report term tests
+script:
+    - flake8 certbot_dns_dnspod tests
+    - pylama certbot_dns_dnspod tests
+    - python -m pytest --cov=certbot_dns_dnspod --cov-report term tests
 
 after_success:
     - pip install coveralls
