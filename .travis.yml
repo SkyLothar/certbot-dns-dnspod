@@ -10,7 +10,7 @@ install:
 
 script:
     - flake8 certbot_dns_dnspod tests
-    - pylama certbot_dns_dnspod tests
+    - pylama certbot_dns_dnspod
     - python -m pytest --cov=certbot_dns_dnspod --cov-report term tests
 
 after_success:
