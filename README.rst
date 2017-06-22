@@ -2,6 +2,8 @@ DNSPOD DNS Authenticator plugin for Certbot
 -------------------------------------------
 .. image:: https://travis-ci.org/SkyLothar/certbot-dns-dnspod.svg?branch=master
     :target: https://travis-ci.org/SkyLothar/certbot-dns-dnspod
+.. image:: https://coveralls.io/repos/github/SkyLothar/certbot-dns-dnspod/badge.svg?branch=master
+    :target: https://coveralls.io/github/SkyLothar/certbot-dns-dnspod?branch=master
 
 
 Use the certbot client to generate a certificate using dnspod.
