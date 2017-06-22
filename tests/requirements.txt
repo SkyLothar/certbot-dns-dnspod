@@ -1,0 +1,9 @@
+pytest
+pytest-cov
+flake8
+pep8-naming
+pylama
+pylama_pylint
+mock
+coverage
+responses

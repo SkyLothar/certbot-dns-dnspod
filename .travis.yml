@@ -1,0 +1,15 @@
+language: python
+
+python:
+    - "2.7"
+    - "3.4"
+
+install:
+    - pip install -r requirements.txt
+    - pip install -r tests/requirements.txt
+
+script: py.test --cov=certbot_dns_dnspod --cov-report term tests
+
+after_success:
+    - pip install coveralls
+    - coveralls
