@@ -3,13 +3,13 @@ DNSPOD DNS Authenticator plugin for Certbot
 
 Use the certbot client to generate a certificate using dnspod.
 
-Prepare an aPI Token
------------------
+Prepare an API Token
+====================
 Fetch an api token on https://www.dnspod.cn/console/user/security
 
 
 Install certbot and plugin
---------------------------
+==========================
 
 .. code-block:: bash
 
@@ -17,7 +17,7 @@ Install certbot and plugin
 
 
 Create a credentials file
----------------------------
+=========================
 
 .. code-block:: ini
 
@@ -26,7 +26,7 @@ Create a credentials file
 
 
 Generate a certificate
-----------------------
+======================
 
 .. code-block:: bash
 
