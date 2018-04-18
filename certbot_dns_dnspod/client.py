@@ -5,39 +5,12 @@ import logging
 import requests
 
 from certbot import errors
+from certbot.plugins import dns_common
 
 __version__ = "0.0.1"
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_base_domain(record):
-    """
-    Extrat the "sub_domain" and "base_domain" for DNSPOD from given record
-
-    :param str record: The record name
-        (typically beginning with "_acme-challenge.").
-    :returns: The sub_domain and domain, if found.
-    :rtype: (str, str)
-    :raises certbot.errors.PluginError: if no sub_domain is found.
-    """
-
-    fragments = record.rsplit(".", 2)
-    if len(fragments) == 3:
-        sub_domain, domain, tld = fragments
-        base_domain = u"{0}.{1}".format(domain, tld)
-    elif len(fragments) == 2:
-        sub_domain = u"@"
-        base_domain = record
-    else:
-        raise errors.PluginError(
-            u"Unable to determine sub_domain for {0}.".format(record)
-        )
-
-    logger.debug(u"%s => %s + %s", record, sub_domain, base_domain)
-    return sub_domain, base_domain
-
 
 class DnspodClient(object):
     """
@@ -85,7 +58,7 @@ class DnspodClient(object):
             communicating with the DNSPOD API
         """
 
-        sub_domain, domain = get_base_domain(record)
+        sub_domain, domain = self.get_base_domain(record)
         self._call(
             "Record.Create",
             {
@@ -114,7 +87,7 @@ class DnspodClient(object):
         """
 
         try:
-            ___, domain = get_base_domain(record)
+            ___, domain = self.get_base_domain(record)
             record_id = self._find_txt_record(record, value)
             if record_id is not None:
                 self._call(
@@ -142,7 +115,7 @@ class DnspodClient(object):
         :rtype: int
         """
 
-        sub_domain, domain = get_base_domain(record_name)
+        sub_domain, domain = self.get_base_domain(record_name)
         data = self._call(
             "Record.List",
             {
@@ -157,6 +130,54 @@ class DnspodClient(object):
                 continue
             return record["id"]
         logger.error(u"TXT record of %s not found", record)
+
+    def _find_all_domains(self):
+        """
+        Extrat all domain from DNSPOD
+        :returns: all domain, if found.
+        :rtype: []
+        """
+        domains = []
+        data = self._call(
+            "Domain.List",
+            {
+            }
+        )
+        
+        for domain in data["domains"]:
+            if domain["status"] != u"enable":
+                continue
+            name = domain["name"]
+            domains.append(name)
+        return domains
+
+    def get_base_domain(self, record):
+        """
+        Extrat the "sub_domain" and "base_domain" for DNSPOD from given record
+
+        :param str record: The record name
+            (typically beginning with "_acme-challenge.").
+        :returns: The sub_domain and domain, if found.
+        :rtype: (str, str)
+        :raises certbot.errors.PluginError: if no sub_domain is found.
+        """
+        domain_name_guesses = dns_common.base_domain_name_guesses(record)
+    
+        domains = self._find_all_domains()
+
+        for guess in domain_name_guesses:
+            matches = [domain for domain in domains if domain == guess]
+
+            if len(matches) > 0:
+                domain = matches[0]
+                logger.debug('Found base domain for %s using name %s', record, guess)
+                sub_domain = record.rpartition("." + domain)[0]
+                base_domain = domain
+                logger.debug(u"%s => %s + %s", record, sub_domain, base_domain)
+                return sub_domain, base_domain
+
+        raise errors.PluginError('Unable to determine base domain for {0} using names: {1}.'
+                                         .format(record, domain_name_guesses))
 
     def _call(self, method, payload):
         """Attach common params and api token for dnspod api request
